@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QPushButton,
     QHBoxLayout,
+    QVBoxLayout,
 )
 
 
@@ -12,7 +13,6 @@ class AccountTable(QTableWidget):
     """Simple table for managing Instagram accounts."""
 
     HEADERS = [
-        "序号",
         "账号",
         "密码",
         "2FA",
@@ -33,8 +33,7 @@ class AccountTable(QTableWidget):
         """Add an empty row with action buttons."""
         row = self.rowCount()
         self.insertRow(row)
-        self.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-        for col in range(1, 10):
+        for col in range(0, 9):
             self.setItem(row, col, QTableWidgetItem(""))
 
         init_btn = QPushButton("初始化")
@@ -44,15 +43,30 @@ class AccountTable(QTableWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(init_btn)
         layout.addWidget(start_btn)
-        self.setCellWidget(row, 10, container)
+        self.setCellWidget(row, 9, container)
+
+
+class MainWindow(QWidget):
+    """Main application window with table and control bar."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.resize(1250, 750)
+
+        self.table = AccountTable()
+
+        add_btn = QPushButton("添加账号")
+        add_btn.clicked.connect(self.table.add_empty_row)
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(add_btn)
+        layout.addWidget(self.table)
 
 
 def main() -> None:
     app = QApplication([])
-    table = AccountTable()
-    table.add_empty_row()
-    table.resize(1000, 300)
-    table.show()
+    window = MainWindow()
+    window.show()
     app.exec()
 
 
