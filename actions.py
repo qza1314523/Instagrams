@@ -2,6 +2,7 @@
 import json
 import sys
 import os
+import logging
 from PyQt6.QtWidgets import QMessageBox
 from db import EDITABLE_FIELDS, READONLY_FIELDS, DISPLAY_FIELDS
 from dialogs import clean_input_text
@@ -148,25 +149,42 @@ def start(row, table, db, row_ids):
         return False
 
 
+logger = logging.getLogger(__name__)
+
+
 def update_account_stats(row, table, db, row_ids, fans_count=None, likes_count=None):
     """更新账号统计信息"""
     try:
         if fans_count is not None:
             fans_col = DISPLAY_FIELDS.index("粉丝") + 1
-            table.item(row, fans_col).setText(str(fans_count))
-        
+            item = table.item(row, fans_col)
+            if item is None:
+                logger.error("缺少粉丝列的表项: row=%s col=%s", row, fans_col)
+                return False
+            item.setText(str(fans_count))
+
         if likes_count is not None:
             likes_col = DISPLAY_FIELDS.index("点赞") + 1
-            table.item(row, likes_col).setText(str(likes_count))
-        
+            item = table.item(row, likes_col)
+            if item is None:
+                logger.error("缺少点赞列的表项: row=%s col=%s", row, likes_col)
+                return False
+            item.setText(str(likes_count))
+
         # 保存到数据库
         if row < len(row_ids):
             row_id = row_ids[row]
-            values = [table.item(row, c).text() for c in range(1, len(DISPLAY_FIELDS) + 1)]
+            values = []
+            for c in range(1, len(DISPLAY_FIELDS) + 1):
+                item = table.item(row, c)
+                if item is None:
+                    logger.error("缺少保存所需的表项: row=%s col=%s", row, c)
+                    return False
+                values.append(item.text())
             db.update(row_id, values)
-        
+
         return True
-        
+
     except Exception as e:
-        print(f"❌ 更新统计信息时发生错误: {str(e)}")
+        logger.error("更新统计信息时发生错误: %s", e)
         return False

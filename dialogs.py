@@ -2,13 +2,14 @@ from PyQt6.QtWidgets import (
     QDialog, QFormLayout, QLineEdit, QLabel, QDialogButtonBox,
     QVBoxLayout, QHBoxLayout, QWidget, QCheckBox, QMessageBox
 )
+import re
 from db import EDITABLE_FIELDS
 from config import FIELDS_TO_CLEAN, VALIDATION_CONFIG
 
 
 def clean_input_text(text: str) -> str:
-    """清理输入文本：去除所有空格和前后空白字符"""
-    return text.replace(" ", "").replace("\t", "").replace("\n", "").strip()
+    """清理输入文本：移除所有空白字符"""
+    return re.sub(r"\s+", "", text).strip()
 
 
 def auto_clean_input(line_edit: QLineEdit, field_name: str):
